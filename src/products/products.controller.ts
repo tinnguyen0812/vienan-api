@@ -29,8 +29,8 @@ export class ProductsController {
   // ── Client endpoints (API Key) — channel auto-detected from key ──────────
 
   /**
-   * GET /products?search=...&categoryId=...&page=...&limit=...
-   * Chỉ trả sản phẩm của channel tương ứng với API key.
+   * GET /products
+   * Public storefront: trả sản phẩm của channel theo API key.
    */
   @Get()
   @UseGuards(ApiKeyGuard)
@@ -40,7 +40,7 @@ export class ProductsController {
 
   /**
    * GET /products/:id
-   * Chỉ trả sản phẩm nếu thuộc channel tương ứng với API key.
+   * Public storefront: trả single product theo channel.
    */
   @Get(':id')
   @UseGuards(ApiKeyGuard)
@@ -51,15 +51,38 @@ export class ProductsController {
   // ── Admin endpoints (JWT) ─────────────────────────────────────────────────
 
   /**
+   * GET /products/admin/list
+   * Admin dashboard: list sản phẩm bằng JWT (không cần API key).
+   * Super Admin thấy tất cả channel; Channel Admin thấy channel của mình.
+   */
+  @Get('admin/list')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  findAllAdmin(@Query() filters: FilterProductDto, @Req() req: any) {
+    const channelId: string | null = req.user.channelId ?? null;
+    return this.productsService.findAll(filters, channelId);
+  }
+
+  /**
+   * GET /products/admin/:id
+   * Admin dashboard: get single product bằng JWT.
+   */
+  @Get('admin/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  findOneAdmin(@Param('id', ParseUUIDPipe) id: string, @Req() req: any) {
+    const channelId: string | null = req.user.channelId ?? null;
+    return this.productsService.findOne(id, channelId);
+  }
+
+  /**
    * POST /products
    * Tạo sản phẩm cho channel của admin đang đăng nhập.
-   * Super Admin cần truyền channelId trong body.
    */
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
   create(@Body() dto: CreateProductDto, @Req() req: any) {
-    // Channel Admin: channelId từ JWT. Super Admin: channelId từ DTO.
     const channelId: string = req.user.channelId ?? dto.channelId;
     return this.productsService.create(dto, channelId);
   }
