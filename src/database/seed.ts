@@ -10,6 +10,7 @@ import { Channel } from '../channels/entities/channel.entity';
 import { User } from '../users/entities/user.entity';
 import { Category } from '../categories/entities/category.entity';
 import { Product } from '../products/entities/product.entity';
+import { ProductVariant } from '../products/entities/product-variant.entity';
 import { ApiKey } from '../auth/entities/api-key.entity';
 import { Order } from '../orders/entities/order.entity';
 import { OrderItem } from '../orders/entities/order-item.entity';
@@ -18,7 +19,8 @@ import { Role } from '../common/enums/role.enum';
 const ds = new DataSource({
   type: 'postgres',
   url: process.env.DATABASE_URL,
-  entities: [Channel, User, Category, Product, ApiKey, Order, OrderItem],
+  ssl: process.env.DATABASE_URL?.includes('railway') ? { rejectUnauthorized: false } : false,
+  entities: [Channel, User, Category, Product, ProductVariant, ApiKey, Order, OrderItem],
   synchronize: true,
 });
 
