@@ -20,8 +20,9 @@ COPY package*.json ./
 RUN npm install --legacy-peer-deps --omit=dev
 
 # Copy built output from builder stage
+# NestJS with sourceRoot=src outputs to dist/src/
 COPY --from=builder /app/dist ./dist
 
 EXPOSE 3000
 
-CMD ["node", "dist/main.js"]
+CMD ["node", "dist/src/main.js"]
