@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { ApiKeyGuard } from '../common/guards/api-key.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../common/enums/role.enum';
 import { ProductVariantsService } from './product-variants.service';
@@ -20,17 +21,21 @@ import { UpdateVariantDto } from './dto/update-variant.dto';
 import { BulkCreateVariantsDto } from './dto/bulk-create-variants.dto';
 
 @Controller('products/:productId/variants')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.ADMIN, Role.SUPER_ADMIN)
 export class ProductVariantsController {
   constructor(private readonly variantsService: ProductVariantsService) {}
 
+  /** Public storefront endpoint — API key only, no JWT required */
   @Get()
+  @UseGuards(ApiKeyGuard)
   findAll(@Param('productId', ParseUUIDPipe) productId: string, @Req() req: any) {
-    return this.variantsService.findAll(productId, req.user.channelId ?? null);
+    const channelId = req.channel?.id ?? null;
+    return this.variantsService.findAll(productId, channelId);
   }
 
+  /** Admin-only write operations — require JWT */
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
   create(
     @Param('productId', ParseUUIDPipe) productId: string,
     @Body() dto: CreateVariantDto,
@@ -40,6 +45,8 @@ export class ProductVariantsController {
   }
 
   @Post('bulk')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
   bulkCreate(
     @Param('productId', ParseUUIDPipe) productId: string,
     @Body() dto: BulkCreateVariantsDto,
@@ -49,6 +56,8 @@ export class ProductVariantsController {
   }
 
   @Patch(':variantId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
   update(
     @Param('productId', ParseUUIDPipe) productId: string,
     @Param('variantId', ParseUUIDPipe) variantId: string,
@@ -59,6 +68,8 @@ export class ProductVariantsController {
   }
 
   @Delete(':variantId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
   remove(
     @Param('productId', ParseUUIDPipe) productId: string,
     @Param('variantId', ParseUUIDPipe) variantId: string,
