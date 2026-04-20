@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { ApiKeyGuard } from '../common/guards/api-key.guard';
+import { ApiKeyOrJwtGuard } from '../common/guards/api-key-or-jwt.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../common/enums/role.enum';
 import { ProductVariantsService } from './product-variants.service';
@@ -24,11 +24,17 @@ import { BulkCreateVariantsDto } from './dto/bulk-create-variants.dto';
 export class ProductVariantsController {
   constructor(private readonly variantsService: ProductVariantsService) {}
 
-  /** Public storefront endpoint — API key only, no JWT required */
+  /**
+   * GET /products/:id/variants
+   * Public (ApiKey) for storefront OR JWT for admin dashboard.
+   * ApiKeyOrJwtGuard handles both auth methods.
+   */
   @Get()
-  @UseGuards(ApiKeyGuard)
+  @UseGuards(ApiKeyOrJwtGuard)
   findAll(@Param('productId', ParseUUIDPipe) productId: string, @Req() req: any) {
-    const channelId = req.channel?.id ?? null;
+    // ApiKey path: req.channelId set by guard
+    // JWT path: req.user.channelId (null = super admin sees all)
+    const channelId: string | null = req.channelId ?? req.user?.channelId ?? null;
     return this.variantsService.findAll(productId, channelId);
   }
 
