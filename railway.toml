@@ -4,9 +4,9 @@ installCommand = "npm install --legacy-peer-deps"
 buildCommand = "npm run build"
 
 [deploy]
-startCommand = "node dist/main.js"
+startCommand = "npm run start:prod"
 healthcheckPath = "/health"
-healthcheckTimeout = 30
+healthcheckTimeout = 60
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
 
