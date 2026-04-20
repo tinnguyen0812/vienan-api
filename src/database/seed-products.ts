@@ -75,39 +75,39 @@ const COLOR_MAP: Record<string, string> = {
 
 const CATEGORIES = [
   {
-    name: 'Ao Tay Ngan',
+    name: 'Áo Tay Ngắn',
     slug: 'ao-tay-ngan',
-    description: 'Ao thun tay ngan unisex va basic cho mac hang ngay',
+    description: 'Áo thun tay ngắn unisex và basic cho mặc hằng ngày',
     sortOrder: 1,
   },
   {
-    name: 'Ao Tay Dai',
+    name: 'Áo Tay Dài',
     slug: 'ao-tay-dai',
-    description: 'Ao tay dai phong cach streetwear va local brand',
+    description: 'Áo tay dài phong cách streetwear và local brand',
     sortOrder: 2,
   },
   {
-    name: 'Ao Hoodie',
+    name: 'Áo Hoodie',
     slug: 'ao-hoodie',
-    description: 'Hoodie ni form rong mac mua lanh',
+    description: 'Hoodie nỉ form rộng mặc mùa lạnh',
     sortOrder: 3,
   },
   {
-    name: 'Ao Polo',
+    name: 'Áo Polo',
     slug: 'ao-polo',
-    description: 'Ao polo nam nu lich su nhung van tre trung',
+    description: 'Áo polo nam nữ lịch sự nhưng vẫn trẻ trung',
     sortOrder: 4,
   },
   {
-    name: 'Quan',
+    name: 'Quần',
     slug: 'quan',
-    description: 'Quan thun va quan ni phoi do de dang',
+    description: 'Quần thun và quần nỉ phối đồ dễ dàng',
     sortOrder: 5,
   },
   {
-    name: 'Phu kien',
+    name: 'Phụ kiện',
     slug: 'phu-kien',
-    description: 'Phu kien local brand dong bo theo outfit',
+    description: 'Phụ kiện local brand đồng bộ theo outfit',
     sortOrder: 6,
   },
 ];

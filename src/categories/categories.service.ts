@@ -13,8 +13,7 @@ export class CategoriesService {
 
   async findAll() {
     return this.categoryRepo.find({
-      relations: ['products'],
-      order: { name: 'ASC' },
+      order: { sortOrder: 'ASC', name: 'ASC' },
     });
   }
 

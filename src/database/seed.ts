@@ -62,12 +62,12 @@ async function main() {
   // Categories
   const catRepo = ds.getRepository(Category);
   const categories = [
-    { name: 'Unisex Boxy', slug: 'unisex-boxy' },
-    { name: 'Oversized', slug: 'oversized' },
-    { name: 'Regular Fit', slug: 'regular-fit' },
-    { name: 'Crop Top', slug: 'crop-top' },
-    { name: 'Polo', slug: 'polo' },
-    { name: 'Hoodie', slug: 'hoodie' },
+    { name: 'Áo Tay Ngắn', slug: 'ao-tay-ngan', description: 'Áo thun tay ngắn unisex và basic cho mặc hằng ngày', sortOrder: 1 },
+    { name: 'Áo Tay Dài', slug: 'ao-tay-dai', description: 'Áo tay dài phong cách streetwear và local brand', sortOrder: 2 },
+    { name: 'Áo Hoodie', slug: 'ao-hoodie', description: 'Hoodie nỉ form rộng mặc mùa lạnh', sortOrder: 3 },
+    { name: 'Áo Polo', slug: 'ao-polo', description: 'Áo polo nam nữ lịch sự nhưng vẫn trẻ trung', sortOrder: 4 },
+    { name: 'Quần', slug: 'quan', description: 'Quần thun và quần nỉ phối đồ dễ dàng', sortOrder: 5 },
+    { name: 'Phụ kiện', slug: 'phu-kien', description: 'Phụ kiện local brand đồng bộ theo outfit', sortOrder: 6 },
   ];
 
   for (const item of categories) {
@@ -123,24 +123,6 @@ async function main() {
     apiKeyValue = apiKey.key;
   }
   console.log(`✅ API key: ${apiKeyValue}`);
-
-  // Products
-  const prodRepo = ds.getRepository(Product);
-  const productExists = await prodRepo.findOne({ where: { name: 'Classic Logo Tee' } });
-  if (!productExists) {
-    await prodRepo.save(
-      prodRepo.create({
-        name: 'Classic Logo Tee',
-        description: 'Comfortable everyday cotton T-shirt.',
-        price: 29.99,
-        stock: 100,
-        images: [],
-        categoryId: cats[0].id,
-        channelId: channel.id,
-      }),
-    );
-  }
-  console.log('✅ Sample product ready');
 
   console.log('\n🎉 Done!  Super Admin: admin@vienan.com / Admin@123');
   console.log('🎉 Channel Admin: admin@channel-vienan.com / Admin@123');
