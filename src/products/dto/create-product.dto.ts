@@ -41,9 +41,10 @@ export class CreateProductDto {
   @IsString()
   shopeeLink?: string;
 
+  @IsOptional()
   @IsInt()
   @Min(0)
-  stock: number;
+  stock?: number;
 
   @IsUUID()
   categoryId: string;
