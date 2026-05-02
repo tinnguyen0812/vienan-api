@@ -20,9 +20,10 @@ export class CreateProductDto {
   @IsPositive()
   price: number;
 
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  images: string[];
+  images?: string[];
 
   @IsOptional()
   @IsString()
