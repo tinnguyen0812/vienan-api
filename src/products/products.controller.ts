@@ -10,8 +10,8 @@ import {
   ParseUUIDPipe,
   UseGuards,
   Req,
+  BadRequestException,
 } from '@nestjs/common';
-import { Request } from 'express';
 import { Role } from '../common/enums/role.enum';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -21,6 +21,7 @@ import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { FilterProductDto } from './dto/filter-product.dto';
+import type { RequestWithUser } from '../common/interfaces/request-with-user.interface';
 
 @Controller('products')
 export class ProductsController {
@@ -34,8 +35,8 @@ export class ProductsController {
    */
   @Get()
   @UseGuards(ApiKeyGuard)
-  findAll(@Query() filters: FilterProductDto, @Req() req: any) {
-    return this.productsService.findAll(filters, req.channelId);
+  findAll(@Query() filters: FilterProductDto, @Req() req: RequestWithUser) {
+    return this.productsService.findAll(filters, req.channelId ?? null);
   }
 
   /**
@@ -44,8 +45,8 @@ export class ProductsController {
    */
   @Get(':id')
   @UseGuards(ApiKeyGuard)
-  findOne(@Param('id', ParseUUIDPipe) id: string, @Req() req: any) {
-    return this.productsService.findOne(id, req.channelId);
+  findOne(@Param('id', ParseUUIDPipe) id: string, @Req() req: RequestWithUser) {
+    return this.productsService.findOne(id, req.channelId ?? null);
   }
 
   // ── Admin endpoints (JWT) ─────────────────────────────────────────────────
@@ -58,8 +59,8 @@ export class ProductsController {
   @Get('admin/list')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
-  findAllAdmin(@Query() filters: FilterProductDto, @Req() req: any) {
-    const channelId: string | null = req.user.channelId ?? null;
+  findAllAdmin(@Query() filters: FilterProductDto, @Req() req: RequestWithUser) {
+    const channelId: string | null = req.user?.channelId ?? null;
     return this.productsService.findAll(filters, channelId);
   }
 
@@ -70,20 +71,24 @@ export class ProductsController {
   @Get('admin/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
-  findOneAdmin(@Param('id', ParseUUIDPipe) id: string, @Req() req: any) {
-    const channelId: string | null = req.user.channelId ?? null;
+  findOneAdmin(@Param('id', ParseUUIDPipe) id: string, @Req() req: RequestWithUser) {
+    const channelId: string | null = req.user?.channelId ?? null;
     return this.productsService.findOne(id, channelId);
   }
 
   /**
    * POST /products
    * Tạo sản phẩm cho channel của admin đang đăng nhập.
+   * Super Admin phải truyền channelId trong body.
    */
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
-  create(@Body() dto: CreateProductDto, @Req() req: any) {
-    const channelId: string = req.user.channelId ?? dto.channelId;
+  create(@Body() dto: CreateProductDto, @Req() req: RequestWithUser) {
+    const channelId: string | undefined | null = req.user?.channelId ?? dto.channelId;
+    if (!channelId) {
+      throw new BadRequestException('channelId is required for Super Admin');
+    }
     return this.productsService.create(dto, channelId);
   }
 
@@ -97,9 +102,10 @@ export class ProductsController {
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateProductDto,
-    @Req() req: any,
+    @Req() req: RequestWithUser,
   ) {
-    return this.productsService.update(id, dto, req.user.channelId ?? null);
+    const channelId: string | null = req.user?.channelId ?? null;
+    return this.productsService.update(id, dto, channelId);
   }
 
   /**
@@ -109,7 +115,7 @@ export class ProductsController {
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
-  remove(@Param('id', ParseUUIDPipe) id: string, @Req() req: any) {
-    return this.productsService.remove(id, req.user.channelId ?? null);
+  remove(@Param('id', ParseUUIDPipe) id: string, @Req() req: RequestWithUser) {
+    return this.productsService.remove(id, req.user?.channelId ?? null);
   }
 }

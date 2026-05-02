@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, Repository, In } from 'typeorm';
 import { Order } from './entities/order.entity';
 import { OrderItem } from './entities/order-item.entity';
 import { Product } from '../products/entities/product.entity';
@@ -36,7 +36,14 @@ export class OrdersService {
       throw new BadRequestException('Order must contain at least one item');
     }
 
-    // Fetch variants and validate stock/channel
+    // Batch fetch variants to avoid N+1 query
+    const variantIds = dto.items.map((i) => i.variantId);
+    const variants = await this.variantRepo.find({
+      where: { id: In(variantIds) },
+      relations: ['product'],
+    });
+
+    const variantMap = new Map(variants.map((v) => [v.id, v]));
     const resolvedItems: {
       variant: ProductVariant;
       product: Product;
@@ -45,15 +52,10 @@ export class OrdersService {
     }[] = [];
 
     for (const line of dto.items) {
-      const variant = await this.variantRepo.findOne({
-        where: { id: line.variantId },
-        relations: ['product'],
-      });
+      const variant = variantMap.get(line.variantId);
 
       if (!variant) {
-        throw new NotFoundException(
-          `Variant #${line.variantId} not found`,
-        );
+        throw new NotFoundException(`Variant #${line.variantId} not found`);
       }
 
       if (!variant.isActive) {
@@ -126,32 +128,26 @@ export class OrdersService {
       });
       const savedOrder = await manager.save(Order, order);
 
-      // Decrement variant stock and increment sold count
+      // Group updates by product to reduce DB calls and avoid deadlocks from SUM()
+      const productUpdates = new Map<string, number>();
+
       for (const { variant, quantity } of resolvedItems) {
+        // Decrement variant stock
         await manager.decrement(
           ProductVariant,
           { id: variant.id },
           'stock',
           quantity,
         );
-        await manager.increment(
-          Product,
-          { id: variant.productId },
-          'soldCount',
-          quantity,
-        );
+
+        const current = productUpdates.get(variant.productId) || 0;
+        productUpdates.set(variant.productId, current + quantity);
       }
 
-      // Sync product.stock = SUM(variant.stock)
-      const productIds = [...new Set(resolvedItems.map((i) => i.variant.productId))];
-      for (const productId of productIds) {
-        const result = await manager
-          .createQueryBuilder(ProductVariant, 'v')
-          .select('COALESCE(SUM(v.stock), 0)', 'total')
-          .where('v.productId = :productId', { productId })
-          .getRawOne<{ total: string }>();
-
-        await manager.update(Product, { id: productId }, { stock: Number(result?.total ?? 0) });
+      // Update product denormalized stock and soldCount
+      for (const [productId, totalQty] of productUpdates.entries()) {
+        await manager.increment(Product, { id: productId }, 'soldCount', totalQty);
+        await manager.decrement(Product, { id: productId }, 'stock', totalQty);
       }
 
       return savedOrder;

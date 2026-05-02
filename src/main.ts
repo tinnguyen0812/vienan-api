@@ -3,6 +3,7 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { TypeOrmExceptionFilter } from './common/filters/typeorm-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -16,6 +17,9 @@ async function bootstrap() {
       transformOptions: { enableImplicitConversion: true },
     }),
   );
+
+  // ── Global Exception Filter ─────────────────────────────────────────
+  app.useGlobalFilters(new TypeOrmExceptionFilter());
 
   // ── Global Response Interceptor ─────────────────────────────────────
   app.useGlobalInterceptors(new ResponseInterceptor());

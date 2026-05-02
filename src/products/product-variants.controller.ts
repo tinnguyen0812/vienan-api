@@ -19,6 +19,7 @@ import { ProductVariantsService } from './product-variants.service';
 import { CreateVariantDto } from './dto/create-variant.dto';
 import { UpdateVariantDto } from './dto/update-variant.dto';
 import { BulkCreateVariantsDto } from './dto/bulk-create-variants.dto';
+import type { RequestWithUser } from '../common/interfaces/request-with-user.interface';
 
 @Controller('products/:productId/variants')
 export class ProductVariantsController {
@@ -31,7 +32,7 @@ export class ProductVariantsController {
    */
   @Get()
   @UseGuards(ApiKeyOrJwtGuard)
-  findAll(@Param('productId', ParseUUIDPipe) productId: string, @Req() req: any) {
+  findAll(@Param('productId', ParseUUIDPipe) productId: string, @Req() req: RequestWithUser) {
     // ApiKey path: req.channelId set by guard
     // JWT path: req.user.channelId (null = super admin sees all)
     const channelId: string | null = req.channelId ?? req.user?.channelId ?? null;
@@ -45,9 +46,9 @@ export class ProductVariantsController {
   create(
     @Param('productId', ParseUUIDPipe) productId: string,
     @Body() dto: CreateVariantDto,
-    @Req() req: any,
+    @Req() req: RequestWithUser,
   ) {
-    return this.variantsService.create(productId, req.user.channelId ?? null, dto);
+    return this.variantsService.create(productId, req.user?.channelId ?? null, dto);
   }
 
   @Post('bulk')
@@ -56,9 +57,9 @@ export class ProductVariantsController {
   bulkCreate(
     @Param('productId', ParseUUIDPipe) productId: string,
     @Body() dto: BulkCreateVariantsDto,
-    @Req() req: any,
+    @Req() req: RequestWithUser,
   ) {
-    return this.variantsService.bulkCreate(productId, req.user.channelId ?? null, dto);
+    return this.variantsService.bulkCreate(productId, req.user?.channelId ?? null, dto);
   }
 
   @Patch(':variantId')
@@ -68,9 +69,9 @@ export class ProductVariantsController {
     @Param('productId', ParseUUIDPipe) productId: string,
     @Param('variantId', ParseUUIDPipe) variantId: string,
     @Body() dto: UpdateVariantDto,
-    @Req() req: any,
+    @Req() req: RequestWithUser,
   ) {
-    return this.variantsService.update(productId, variantId, req.user.channelId ?? null, dto);
+    return this.variantsService.update(productId, variantId, req.user?.channelId ?? null, dto);
   }
 
   @Delete(':variantId')
@@ -79,8 +80,8 @@ export class ProductVariantsController {
   remove(
     @Param('productId', ParseUUIDPipe) productId: string,
     @Param('variantId', ParseUUIDPipe) variantId: string,
-    @Req() req: any,
+    @Req() req: RequestWithUser,
   ) {
-    return this.variantsService.remove(productId, variantId, req.user.channelId ?? null);
+    return this.variantsService.remove(productId, variantId, req.user?.channelId ?? null);
   }
 }

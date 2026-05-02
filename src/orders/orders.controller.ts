@@ -18,6 +18,7 @@ import { ApiKeyGuard } from '../common/guards/api-key.guard';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
+import type { RequestWithUser } from '../common/interfaces/request-with-user.interface';
 
 @Controller()
 export class OrdersController {
@@ -32,8 +33,8 @@ export class OrdersController {
    */
   @Post('orders')
   @UseGuards(ApiKeyGuard)
-  createOrder(@Req() req: any, @Body() dto: CreateOrderDto) {
-    return this.ordersService.createOrder(req.channelId, dto);
+  createOrder(@Req() req: RequestWithUser, @Body() dto: CreateOrderDto) {
+    return this.ordersService.createOrder(req.channelId!, dto);
   }
 
   /**
@@ -43,8 +44,8 @@ export class OrdersController {
    */
   @Get('orders/lookup')
   @UseGuards(ApiKeyGuard)
-  lookupByPhone(@Req() req: any, @Query('phone') phone: string) {
-    return this.ordersService.lookupByPhone(req.channelId, phone);
+  lookupByPhone(@Req() req: RequestWithUser, @Query('phone') phone: string) {
+    return this.ordersService.lookupByPhone(req.channelId!, phone);
   }
 
   // ── Admin (JWT) ────────────────────────────────────────────────────────
@@ -57,8 +58,8 @@ export class OrdersController {
   @Get('admin/orders')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
-  getAllOrders(@Req() req: any) {
-    return this.ordersService.getAllOrders(req.user.channelId ?? null);
+  getAllOrders(@Req() req: RequestWithUser) {
+    return this.ordersService.getAllOrders(req.user?.channelId ?? null);
   }
 
   /**
@@ -67,8 +68,8 @@ export class OrdersController {
   @Get('admin/orders/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
-  getOrderById(@Param('id', ParseUUIDPipe) id: string, @Req() req: any) {
-    return this.ordersService.getOrderById(id, req.user.channelId ?? null);
+  getOrderById(@Param('id', ParseUUIDPipe) id: string, @Req() req: RequestWithUser) {
+    return this.ordersService.getOrderById(id, req.user?.channelId ?? null);
   }
 
   /**
@@ -81,8 +82,8 @@ export class OrdersController {
   updateOrderStatus(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateOrderStatusDto,
-    @Req() req: any,
+    @Req() req: RequestWithUser,
   ) {
-    return this.ordersService.updateOrderStatus(id, dto, req.user.channelId ?? null);
+    return this.ordersService.updateOrderStatus(id, dto, req.user?.channelId ?? null);
   }
 }
