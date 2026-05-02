@@ -9,6 +9,22 @@ import {
 
 export class UpdateVariantDto {
   @IsOptional()
+  @IsString()
+  color?: string;
+
+  @IsOptional()
+  @IsString()
+  colorCode?: string;
+
+  @IsOptional()
+  @IsString()
+  size?: string;
+
+  @IsOptional()
+  @IsString()
+  sku?: string;
+
+  @IsOptional()
   @IsNumber()
   @Min(0)
   stock?: number;
@@ -18,13 +34,13 @@ export class UpdateVariantDto {
   @IsPositive()
   price?: number;
 
+  /**
+   * null = giữ nguyên ảnh cũ (frontend không gửi null khi ảnh chưa thay đổi).
+   * Chỉ gửi string URL khi user thực sự upload ảnh mới.
+   */
   @IsOptional()
   @IsString()
-  imageUrl?: string;
-
-  @IsOptional()
-  @IsString()
-  colorCode?: string;
+  imageUrl?: string | null;
 
   @IsOptional()
   @IsBoolean()
